@@ -1,9 +1,13 @@
 package com.deploy.pertemuan11.security;
 
+import com.deploy.pertemuan11.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -14,5 +18,21 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder PasswordEndcoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService(UserRepository userRepository) {
+
+        return username -> {
+
+            com.deploy.pertemuan11.model.User user = userRepository.findByUsername(username).
+                    orElseThrow(() -> new UsernameNotFoundException("User tidak ditemukan"));
+
+            return User
+                    .withUsername(user.getUsername())
+                    .password(user.getPassword())
+                    .authorities("USER")
+                    .build();
+        };
     }
 }
